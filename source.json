@@ -6,8 +6,8 @@
       "name": "Bazarr",
       "description": "Check installed and missing subtitle languages for movies in your Bazarr library.",
       "repository": "TacoRocket/tunarr-bazarr-extension",
-      "version": "0.4.0",
-      "commit": "5c32c74306331d1e38ed20834358c2b6f0c065cb"
+      "version": "0.5.0",
+      "commit": "16f8ad9a95933d998e9493a51bbbc16f6a3dfd0d"
     }
   ]
 }
