@@ -19,7 +19,7 @@ Each listing names the publisher's repository, the version and the exact Git com
 | Host | Source | Bazarr package |
 | --- | --- | --- |
 | Original extension trial (API v1) | [source.json](source.json) | Python v0.5.0 |
-| Proposed fork integration (API v2) | [source-v2.json](source-v2.json) | JavaScript v1.0.0 |
+| Proposed fork integration (API v2) | [source-v2.json](source-v2.json) | JavaScript v1.0.1 |
 
 The v2 source is prepared for the upcoming fork PR. The original trial can continue installing and updating from its v1 source.
 
