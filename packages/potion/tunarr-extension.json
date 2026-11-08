@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "apiVersion": "0.5",
   "entrypoint": "adapter.js",
-  "sha256": "b002de91e5e93d304e62e4d6b045f288461fbcabeeb7bc6848bf88f93841d360",
+  "sha256": "1d2fb770765c944cb5d43f523361d5f274072167fc2967f2fe3ea00ac25225d3",
   "name": "Potion",
   "description": "Semantic recommendations: finds shows and movies with similar descriptions, using the small Potion model inside Tunarr.",
   "maintainer": "TacoRocket",

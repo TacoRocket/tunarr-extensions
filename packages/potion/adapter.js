@@ -2957,45 +2957,14 @@
 
   // src/adapter.src.js
   var DIM = 256;
-  var VOCAB = 29528;
-  var UNKNOWN = 1;
   var CHUNK = 1024;
-  var engine = typeof compute === "function" ? compute("potion.wasm") : null;
+  var engine = compute("potion.wasm");
   var tokenizer;
   function loadTokenizer() {
     return tokenizer ?? (tokenizer = new Tokenizer_default(
       JSON.parse(readTextFile("tokenizer.json")),
       JSON.parse(readTextFile("tokenizer_config.json"))
     ));
-  }
-  var model;
-  function loadModel() {
-    if (model) return model;
-    const weights = readFile("model.safetensors");
-    const view = new DataView(weights);
-    const start = 8 + Number(view.getBigUint64(0, true));
-    model = {
-      embeddings: new Float32Array(weights.slice(start, start + VOCAB * DIM * 4)),
-      tokenizer: loadTokenizer()
-    };
-    return model;
-  }
-  function encode(text, out, offset) {
-    const { tokenizer: tokenizer2, embeddings } = loadModel();
-    const ids = tokenizer2.encode(text, { add_special_tokens: false }).ids.filter((id) => id !== UNKNOWN);
-    for (let d = 0; d < DIM; d++) out[offset + d] = 0;
-    if (!ids.length) return;
-    for (const id of ids) {
-      const row = id * DIM;
-      for (let d = 0; d < DIM; d++) out[offset + d] += embeddings[row + d];
-    }
-    let norm = 0;
-    for (let d = 0; d < DIM; d++) {
-      out[offset + d] /= ids.length;
-      norm += out[offset + d] * out[offset + d];
-    }
-    norm = Math.sqrt(norm) + 1e-32;
-    for (let d = 0; d < DIM; d++) out[offset + d] /= norm;
   }
   function readIndex() {
     return {
@@ -3034,22 +3003,19 @@
       delete slots[id];
       free.push(slot);
     }
-    let vectors;
-    if (engine && items.length) {
+    if (items.length) {
       engine.call("init", { file: "tokenizer.json" }, { file: "model.safetensors" });
-      vectors = new Float32Array(engine.call("embed", JSON.stringify(items.map(computeInput))));
-    }
-    for (const [i, { id, text }] of items.entries()) {
-      let slot = slots[id];
-      if (slot === void 0) {
-        slot = free.length ? free.pop() : count++;
-        slots[id] = slot;
+      const vectors = new Float32Array(engine.call("embed", JSON.stringify(items.map(computeInput))));
+      for (const [i, { id }] of items.entries()) {
+        let slot = slots[id];
+        if (slot === void 0) {
+          slot = free.length ? free.pop() : count++;
+          slots[id] = slot;
+        }
+        const c = Math.floor(slot / CHUNK);
+        chunks.get(c).set(vectors.subarray(i * DIM, (i + 1) * DIM), slot % CHUNK * DIM);
+        dirty.add(c);
       }
-      const c = Math.floor(slot / CHUNK);
-      const offset = slot % CHUNK * DIM;
-      if (vectors) chunks.get(c).set(vectors.subarray(i * DIM, (i + 1) * DIM), offset);
-      else encode(text, chunks.get(c), offset);
-      dirty.add(c);
     }
     for (const c of dirty) storage.writeFile(`vectors-${c}.bin`, chunks.get(c));
     storage.set("slots", JSON.stringify(slots));
@@ -3067,16 +3033,12 @@
     const best = [];
     for (let c = 0; c * CHUNK < count; c++) {
       const rows = readChunk(c);
-      const scores = engine ? new Float64Array(engine.call("score", rows, q)) : null;
+      const scores = new Float64Array(engine.call("score", rows, q));
       const length = Math.min(CHUNK, count - c * CHUNK);
       for (let i = 0; i < length; i++) {
         const slot = c * CHUNK + i;
         if (slot === target || owner[slot] === void 0) continue;
-        let score = scores ? scores[i] : 0;
-        if (!scores) {
-          const base = i * DIM;
-          for (let d = 0; d < DIM; d++) score += rows[base + d] * q[d];
-        }
+        const score = scores[i];
         if (best.length < k) {
           best.push({ slot, score });
           if (best.length === k) best.sort((a, b) => a.score - b.score);

@@ -38,9 +38,9 @@ In Settings → Extensions, choose the Potion card, then **Uninstall**. This rem
 
 ## For developers
 
-The adapter stores normalized 256-dimensional vectors in chunks of 1,024 rows. Version 1.1 keeps the 1.0 index format. A query scores each chunk against the requested title and keeps the nearest matches in JavaScript.
+The adapter stores normalized 256-dimensional vectors in chunks of 1,024 rows. A query scores each chunk against the requested title and keeps the nearest matches in JavaScript.
 
-On hosts with compute support, `compute/src/lib.rs` tokenizes ordinary ASCII text with WordPiece, averages the model rows, and scores vectors by dot product. The pinned Hugging Face tokenizer handles Unicode, control characters and special tokens. Queries read the index directly. On older API 0.5 hosts, the adapter uses its JavaScript implementation.
+The compute module in `compute/src/lib.rs` tokenizes ordinary ASCII text with WordPiece, averages the model rows, and scores vectors by dot product. The pinned Hugging Face tokenizer handles Unicode, control characters and special tokens. Queries read the index directly.
 
 The published module was built with Rust 1.99.1 and the `wasm32-unknown-unknown` target. From this directory, rebuild both artifacts with:
 
