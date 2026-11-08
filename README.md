@@ -12,6 +12,7 @@ Browse extensions for Tunarr here, then install them from **Settings → Extensi
 
 | Extension | What it does |
 | --- | --- |
+| [Potion](packages/potion) | Semantic recommendations: finds shows and movies with similar descriptions, using the small Potion model inside Tunarr. Nothing extra to run. |
 | [Bazarr](https://github.com/TacoRocket/tunarr-bazarr-extension) | Checks which subtitles Bazarr has for a movie and asks Bazarr to search for the missing ones. Requires a running Bazarr connected to Radarr. |
 
 Each listing names the publisher's repository, the version and the exact Git commit to install.
