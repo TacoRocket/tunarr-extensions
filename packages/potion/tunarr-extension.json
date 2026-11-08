@@ -1,9 +1,9 @@
 {
   "id": "potion",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "apiVersion": "0.5",
   "entrypoint": "adapter.js",
-  "sha256": "9505f9b55d81acac5c61ef135ea5d14e330e7b4ada621b5e867d77020dc78232",
+  "sha256": "b002de91e5e93d304e62e4d6b045f288461fbcabeeb7bc6848bf88f93841d360",
   "name": "Potion",
   "description": "Semantic recommendations: finds shows and movies with similar descriptions, using the small Potion model inside Tunarr.",
   "maintainer": "TacoRocket",
@@ -12,9 +12,9 @@
     "reads": "The titles, genres, tags and summaries of your shows and movies, which Tunarr hands it.",
     "changes": "Nothing in Tunarr. It keeps its own index of those titles.",
     "connectsTo": "Nothing. It runs entirely inside Tunarr.",
-    "downloads": "The Potion model (about 30 MB) from this extension's repository, when installed."
+    "downloads": "The Potion model, tokenizer and calculation module (about 31 MB total) from this extension’s repository at install."
   },
-  "memoryMiB": 128,
+  "memoryMiB": 192,
   "storageMiB": 128,
   "files": [
     {
@@ -31,6 +31,11 @@
       "name": "tokenizer_config.json",
       "bytes": 1431,
       "sha256": "6725995e3ab3039857ff5bd99178a7cdf42863abb04449e7bb31feb1f55fe567"
+    },
+    {
+      "name": "potion.wasm",
+      "bytes": 107168,
+      "sha256": "fb0664f6a56432350414c74ee2fcc0f1c32ed4424cc68cdd6f6581d8859d3162"
     }
   ],
   "provides": [
@@ -43,5 +48,6 @@
       "inputs": []
     }
   ],
-  "requests": []
+  "requests": [],
+  "computeModule": "potion.wasm"
 }

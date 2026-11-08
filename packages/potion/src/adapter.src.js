@@ -13,6 +13,16 @@ const UNKNOWN = 1;
 // rewrites the files it touches.
 const CHUNK = 1024;
 
+// API 0.5 hosts that predate compute keep using their JavaScript implementation.
+const engine = typeof compute === 'function' ? compute('potion.wasm') : null;
+let tokenizer;
+function loadTokenizer() {
+  return tokenizer ??= new Tokenizer(
+    JSON.parse(readTextFile('tokenizer.json')),
+    JSON.parse(readTextFile('tokenizer_config.json')),
+  );
+}
+
 let model;
 function loadModel() {
   if (model) return model;
@@ -21,10 +31,7 @@ function loadModel() {
   const start = 8 + Number(view.getBigUint64(0, true));
   model = {
     embeddings: new Float32Array(weights.slice(start, start + VOCAB * DIM * 4)),
-    tokenizer: new Tokenizer(
-      JSON.parse(readTextFile('tokenizer.json')),
-      JSON.parse(readTextFile('tokenizer_config.json')),
-    ),
+    tokenizer: loadTokenizer(),
   };
   return model;
 }
@@ -57,16 +64,24 @@ function readIndex() {
   };
 }
 
+function readChunk(c) {
+  const bytes = storage.readFile(`vectors-${c}.bin`);
+  return bytes ? new Float32Array(bytes) : new Float32Array(CHUNK * DIM);
+}
+
 function chunkReader() {
   const loaded = new Map();
   const get = (c) => {
-    if (!loaded.has(c)) {
-      const bytes = storage.readFile(`vectors-${c}.bin`);
-      loaded.set(c, bytes ? new Float32Array(bytes) : new Float32Array(CHUNK * DIM));
-    }
+    if (!loaded.has(c)) loaded.set(c, readChunk(c));
     return loaded.get(c);
   };
   return { get, loaded };
+}
+
+function computeInput({ text }) {
+  // The pinned tokenizer owns Unicode normalization and special-token handling.
+  if (/[^ -~]|\[/.test(text)) return loadTokenizer().encode(text, { add_special_tokens: false }).ids;
+  return text;
 }
 
 function index(items, removed) {
@@ -83,14 +98,21 @@ function index(items, removed) {
     delete slots[id];
     free.push(slot);
   }
-  for (const { id, text } of items) {
+  let vectors;
+  if (engine && items.length) {
+    engine.call('init', { file: 'tokenizer.json' }, { file: 'model.safetensors' });
+    vectors = new Float32Array(engine.call('embed', JSON.stringify(items.map(computeInput))));
+  }
+  for (const [i, { id, text }] of items.entries()) {
     let slot = slots[id];
     if (slot === undefined) {
       slot = free.length ? free.pop() : count++;
       slots[id] = slot;
     }
     const c = Math.floor(slot / CHUNK);
-    encode(text, chunks.get(c), (slot % CHUNK) * DIM);
+    const offset = (slot % CHUNK) * DIM;
+    if (vectors) chunks.get(c).set(vectors.subarray(i * DIM, (i + 1) * DIM), offset);
+    else encode(text, chunks.get(c), offset);
     dirty.add(c);
   }
   for (const c of dirty) storage.writeFile(`vectors-${c}.bin`, chunks.get(c));
@@ -106,23 +128,27 @@ function query(id, k) {
   if (target === undefined) return { matches: [] };
   const owner = new Array(count);
   for (const [key, slot] of Object.entries(slots)) owner[slot] = key;
-  const chunks = chunkReader();
-  const q = chunks
-    .get(Math.floor(target / CHUNK))
-    .slice((target % CHUNK) * DIM, (target % CHUNK + 1) * DIM);
+  const q = readChunk(Math.floor(target / CHUNK)).slice((target % CHUNK) * DIM, (target % CHUNK + 1) * DIM);
   const best = [];
-  for (let slot = 0; slot < count; slot++) {
-    if (slot === target || owner[slot] === undefined) continue;
-    const rows = chunks.get(Math.floor(slot / CHUNK));
-    const base = (slot % CHUNK) * DIM;
-    let score = 0;
-    for (let d = 0; d < DIM; d++) score += rows[base + d] * q[d];
-    if (best.length < k) {
-      best.push({ slot, score });
-      if (best.length === k) best.sort((a, b) => a.score - b.score);
-    } else if (score > best[0].score) {
-      best[0] = { slot, score };
-      best.sort((a, b) => a.score - b.score);
+  for (let c = 0; c * CHUNK < count; c++) {
+    const rows = readChunk(c);
+    const scores = engine ? new Float64Array(engine.call('score', rows, q)) : null;
+    const length = Math.min(CHUNK, count - c * CHUNK);
+    for (let i = 0; i < length; i++) {
+      const slot = c * CHUNK + i;
+      if (slot === target || owner[slot] === undefined) continue;
+      let score = scores ? scores[i] : 0;
+      if (!scores) {
+        const base = i * DIM;
+        for (let d = 0; d < DIM; d++) score += rows[base + d] * q[d];
+      }
+      if (best.length < k) {
+        best.push({ slot, score });
+        if (best.length === k) best.sort((a, b) => a.score - b.score);
+      } else if (score > best[0].score) {
+        best[0] = { slot, score };
+        best.sort((a, b) => a.score - b.score);
+      }
     }
   }
   best.sort((a, b) => b.score - a.score);
