@@ -12,16 +12,17 @@ Browse extensions for Tunarr here, then install them from **Settings → Extensi
 
 | Extension | What it does |
 | --- | --- |
-| [Bazarr](https://github.com/TacoRocket/tunarr-bazarr-extension) | Shows installed and missing subtitle languages for movies in your Bazarr library. Requires a running Bazarr instance connected to Radarr. |
+| [Bazarr](https://github.com/TacoRocket/tunarr-bazarr-extension) | Checks which subtitles Bazarr has for a movie and asks Bazarr to search for the missing ones. Requires a running Bazarr connected to Radarr. |
 
 Each listing names the publisher's repository, the version and the exact Git commit to install.
 
 | Host | Source | Bazarr package |
 | --- | --- | --- |
+| Tunarr extension API 0.x (early beta) | [source-v0.json](source-v0.json) | JavaScript v1.1.0 |
 | Original extension trial (API v1) | [source.json](source.json) | Python v0.5.0 |
 | Proposed fork integration (API v2) | [source-v2.json](source-v2.json) | JavaScript v1.0.1 |
 
-The API v2 host is under review in [Tunarr PR #219](https://github.com/TacoRocket/tunarr/pull/219). The original trial can continue installing and updating from its v1 source.
+Tunarr reads the listing for its extension API's major version, so a Tunarr update within 0.x keeps using `source-v0.json`. The extension store is under review in [Tunarr PR #219](https://github.com/TacoRocket/tunarr/pull/219). The earlier trial hosts keep installing from their own listings.
 
 ## If your Tunarr has no Extensions page
 
