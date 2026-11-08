@@ -21,7 +21,7 @@ Each listing names the publisher's repository, the version and the exact Git com
 | Original extension trial (API v1) | [source.json](source.json) | Python v0.5.0 |
 | Proposed fork integration (API v2) | [source-v2.json](source-v2.json) | JavaScript v1.0.1 |
 
-The v2 source is prepared for the upcoming fork PR. The original trial can continue installing and updating from its v1 source.
+The API v2 host is under review in [Tunarr PR #219](https://github.com/TacoRocket/tunarr/pull/219). The original trial can continue installing and updating from its v1 source.
 
 ## If your Tunarr has no Extensions page
 
