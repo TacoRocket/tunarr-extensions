@@ -1,6 +1,6 @@
 # Tunarr Extensions
 
-Browse extensions for Tunarr here, then install them from **Settings → Extensions** in your trial instance. Each extension has its own repository and can be updated independently of Tunarr.
+Browse extensions for Tunarr here, then install them from **Settings → Extensions** in an extension-enabled Tunarr instance. Each extension has its own repository and can be updated independently of Tunarr.
 
 ## Get started
 
@@ -14,7 +14,14 @@ Browse extensions for Tunarr here, then install them from **Settings → Extensi
 | --- | --- |
 | [Bazarr](https://github.com/TacoRocket/tunarr-bazarr-extension) | Shows installed and missing subtitle languages for movies in your Bazarr library. Requires a running Bazarr instance connected to Radarr. |
 
-Tunarr reads the store listings from [source.json](source.json). Each listing names the publisher’s repository, the version and the exact Git commit to install.
+Each listing names the publisher's repository, the version and the exact Git commit to install.
+
+| Host | Source | Bazarr package |
+| --- | --- | --- |
+| Original extension trial (API v1) | [source.json](source.json) | Python v0.5.0 |
+| Proposed fork integration (API v2) | [source-v2.json](source-v2.json) | JavaScript v1.0.0 |
+
+The v2 source is prepared for the upcoming fork PR. The original trial can continue installing and updating from its v1 source.
 
 ## If your Tunarr has no Extensions page
 
