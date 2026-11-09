@@ -15,8 +15,8 @@
       "description": "Semantic recommendations: finds shows and movies with similar descriptions, using the small Potion model inside Tunarr.",
       "repository": "TacoRocket/tunarr-extensions",
       "path": "packages/potion",
-      "version": "1.0.0",
-      "commit": "99239df117e4236b245b036dfd4a17deef29370b"
+      "version": "1.1.0",
+      "commit": "643422e453f9f93c10c84ce3597ee994bd1c3684"
     }
   ]
 }

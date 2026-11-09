@@ -1,0 +1,20 @@
+[package]
+name = "potion-compute"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Potion's two heavy steps for the Tunarr extension: text to vectors, and nearest titles."
+
+[lib]
+crate-type = ["cdylib"]
+path = "src/lib.rs"
+
+[dependencies]
+serde_json = "1"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
