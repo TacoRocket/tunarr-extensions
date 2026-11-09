@@ -6,8 +6,8 @@
       "name": "Bazarr",
       "description": "Check which subtitles Bazarr has for a movie, and ask Bazarr to search for the missing ones.",
       "repository": "TacoRocket/tunarr-bazarr-extension",
-      "version": "1.1.2",
-      "commit": "97c726eaafd178de863659752a3685fd76600350"
+      "version": "1.2.0",
+      "commit": "52c03923479a0de1fe0b389fd7c8988fb9bc15a9"
     },
     {
       "id": "potion",
